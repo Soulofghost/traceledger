@@ -6,6 +6,9 @@ import { provenanceManager } from '../src/engine/provenance.js';
 describe('TraceLedger Supply Chain Provenance Engine Tests', () => {
   before(() => {
     initDb();
+    db.exec("DELETE FROM telematics WHERE batch_id IN ('LOT-CRYO-001', 'LOT-COLD-BIO-77', 'LOT-IOT-TEST')");
+    db.exec("DELETE FROM transfers WHERE batch_id IN ('LOT-CRYO-001', 'LOT-COLD-BIO-77', 'LOT-IOT-TEST')");
+    db.exec("DELETE FROM batches WHERE id IN ('LOT-CRYO-001', 'LOT-COLD-BIO-77', 'LOT-IOT-TEST')");
   });
 
   const mfg = '0x1111111111111111111111111111111111111111';
@@ -147,3 +150,4 @@ describe('TraceLedger Supply Chain Provenance Engine Tests', () => {
     assert.equal(cert.provenanceProofDigest.length, 66);
   });
 });
+
