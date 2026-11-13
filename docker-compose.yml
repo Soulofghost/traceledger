@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  traceledger:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traceledger-app
+    ports:
+      - "8010:8010"
+    environment:
+      - PORT=8010
+      - TRACELEDGER_DB=/app/backend/data/traceledger.db
+    volumes:
+      - provenance_data:/app/backend/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8010/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  provenance_data:
+    driver: local

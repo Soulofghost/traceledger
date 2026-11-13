@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TraceLedger | Blockchain Supply-Chain Tracking & Provenance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">TraceLedger <span class="badge-tag">PROVENANCE LEDGER</span></h1>
+        <p class="brand-sub">Cryptographic Chain-of-Custody & Cold-Chain Telematics</p>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button class="btn btn-outline" id="btnOpenVerifyModal">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Verify Provenance Certificate
+      </button>
+      <button class="btn btn-primary" id="btnOpenRegisterModal">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Register New Batch
+      </button>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main class="main-layout">
+    <!-- Sidebar: Batch Catalog -->
+    <aside class="batches-sidebar">
+      <div class="sidebar-head">
+        <h2>Monitored Batches</h2>
+        <span class="count-pill" id="batchesCount">0 Tracked</span>
+      </div>
+      <div class="batches-list" id="batchesList">
+        <!-- Rendered dynamically -->
+      </div>
+    </aside>
+
+    <!-- Detail View: Chain of Custody & Telematics -->
+    <section class="batch-details" id="batchDetails">
+      <div class="empty-view" id="emptyBatchView">
+        <p>Select a product lot or consignment from the sidebar to inspect its cryptographic provenance and chain of custody.</p>
+      </div>
+
+      <div class="batch-card hidden" id="batchContentCard">
+        <!-- Batch Header -->
+        <div class="batch-meta-header">
+          <div>
+            <div class="tag-row">
+              <span class="status-pill" id="batchStatusPill">MANUFACTURED</span>
+              <span class="lot-mono" id="batchIdLabel">LOT-0000</span>
+              <span class="cold-tag hidden" id="coldChainTag">COLD-CHAIN MONITORED</span>
+            </div>
+            <h2 class="batch-title" id="batchTitle">Product Name</h2>
+            <p class="origin-sub" id="batchOriginLabel">Origin: Zurich, Switzerland</p>
+          </div>
+          <div class="header-action-group">
+            <button class="btn btn-outline btn-sm" id="btnSimulateTelematics">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Log IoT Ping
+            </button>
+            <button class="btn btn-primary btn-sm" id="btnTransferCustody">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              Transfer Custody
+            </button>
+          </div>
+        </div>
+
+        <!-- Warning banner if compromised -->
+        <div class="compromise-banner hidden" id="compromiseBanner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="compromiseReasonText">Thermal excursion detected</span>
+        </div>
+
+        <!-- Custody Info Cards -->
+        <div class="custody-grid">
+          <div class="c-card">
+            <span class="c-label">MANUFACTURER</span>
+            <span class="c-val mono" id="mfgAddressLabel">0x...</span>
+          </div>
+          <div class="c-card">
+            <span class="c-label">CURRENT CUSTODIAN</span>
+            <span class="c-val mono" id="custodianAddressLabel">0x...</span>
+          </div>
+          <div class="c-card">
+            <span class="c-label">THERMAL BOUNDS</span>
+            <span class="c-val" id="thermalBoundsLabel">Ambient</span>
+          </div>
+        </div>
+
+        <!-- Chain of Custody Timeline -->
+        <div class="timeline-container">
+          <h3>Cryptographic Chain of Custody</h3>
+          <div class="timeline-list" id="transfersTimeline">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Telematics Stream -->
+        <div class="telematics-container">
+          <h3>IoT Telemetry & Thermal Audits</h3>
+          <div class="telematics-table-wrap">
+            <table class="telematics-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Location / Node</th>
+                  <th>Temperature</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="telematicsTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Register Batch Modal -->
+  <div id="registerModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Register New Product Consignment</h3>
+        <button class="btn-close" id="btnCloseRegister">&times;</button>
+      </div>
+      <form id="registerForm" class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="regLotId">Batch / Lot Identifier *</label>
+            <input type="text" id="regLotId" required placeholder="e.g. LOT-MED-8810" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="regSku">SKU Code *</label>
+            <input type="text" id="regSku" required placeholder="SKU-BIO-440" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="regProductName">Product Name / Commodity *</label>
+          <input type="text" id="regProductName" required placeholder="e.g. Lyophilized Diagnostic Reagent" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="regOrigin">Manufacturing Origin Facility *</label>
+          <input type="text" id="regOrigin" required placeholder="e.g. Cambridge Life Sciences Park, UK" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="regMfgAddr">Manufacturer Signing Address *</label>
+          <input type="text" id="regMfgAddr" required value="0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="regColdChain"> Enforce Cold-Chain Environmental Controls
+          </label>
+        </div>
+        <div class="form-row" id="tempBoundsRow" style="display:none;">
+          <div class="form-group">
+            <label for="regMinTemp">Min Safe Temp (°C)</label>
+            <input type="number" id="regMinTemp" step="0.5" value="-80" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="regMaxTemp">Max Safe Temp (°C)</label>
+            <input type="number" id="regMaxTemp" step="0.5" value="-20" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelRegister">Cancel</button>
+          <button type="submit" class="btn btn-primary">Commit Batch to Ledger</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Transfer Custody Modal -->
+  <div id="transferModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Authorize Custody Handover</h3>
+        <button class="btn-close" id="btnCloseTransfer">&times;</button>
+      </div>
+      <form id="transferForm" class="modal-body">
+        <div class="form-group">
+          <label for="trCurrentCustodian">Current Signing Custodian *</label>
+          <input type="text" id="trCurrentCustodian" required readonly class="form-input" style="background:#f1f5f9;">
+        </div>
+        <div class="form-group">
+          <label for="trNextCustodian">Receiving Custodian Address *</label>
+          <input type="text" id="trNextCustodian" required placeholder="0x..." class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="trLocation">Handover Facility / Geolocation *</label>
+          <input type="text" id="trLocation" required placeholder="e.g. Frankfurt Cargo Airport Dock 12" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="trTemp">Current Telemetry Temp (°C)</label>
+          <input type="number" id="trTemp" step="0.1" placeholder="-74.2" class="form-input">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelTransfer">Cancel</button>
+          <button type="submit" class="btn btn-primary">Sign & Transfer Custody</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Simulate Telematics Modal -->
+  <div id="telematicsModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Record IoT Sensor Telematics</h3>
+        <button class="btn-close" id="btnCloseTelematics">&times;</button>
+      </div>
+      <form id="telematicsForm" class="modal-body">
+        <div class="form-group">
+          <label for="telTemp">Sensor Temperature Reading (°C) *</label>
+          <input type="number" id="telTemp" step="0.1" required placeholder="-72.5" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="telLocation">In-Transit Node / GPS Track *</label>
+          <input type="text" id="telLocation" required placeholder="e.g. Transatlantic Flight Speedbird 212" class="form-input">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelTelematics">Cancel</button>
+          <button type="submit" class="btn btn-primary">Transmit Sensor Ping</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Verification Modal -->
+  <div id="verifyModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Cryptographic Provenance Verification</h3>
+        <button class="btn-close" id="btnCloseVerify">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="cert-card" id="certDetails">
+          <!-- Injected via app.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
