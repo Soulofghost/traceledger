@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
 
 # SQLite & Data
 backend/data/*.db
@@ -22,3 +21,4 @@ typechain/
 Thumbs.db
 .vscode/
 .idea/
+
